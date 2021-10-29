@@ -34,6 +34,10 @@ for i in range(20):
             title_href = dts[0].find('a').attrs['href']
             title = dts[1].find('a').string.strip()
 
+            imgFileName = str(time.time()).replace('.', '') + '.jpg'  # 이미지 파일명
+
+            rq.urlretrieve(imgURL, "C:/chh_server/project/newsPjt/src/main/webapp/resources/newimgs/" + imgFileName)
+
         # article
         lede = dl.find('span', {'class':'lede'}).string
 
@@ -47,22 +51,27 @@ for i in range(20):
         print(f'lede : {lede}')
         print(f'writing : {writing}')
 
-        imgFileName = str(time.time()).replace('.','') + '.jpg'  # 이미지 파일명
 
-        rq.urlretrieve(imgURL, './imgDir/' + imgFileName)
 
         # 예외처리 필수
         conn = mariadb.connect(host='localhost',
-                               port='3306',
+                               port=3306,
                                user='root',
                                password='1234',
                                db='newsdb')
 
         cur = conn.cursor()
 
-        sql = 'INSERT INTO tbl_news '
+        n_title = title;     n_title_href = title_href;     n_photo_name = imgFileName
+        n_article = lede;    n_publisher = writing
 
-        cur.execute(sql)
+        if n_article == None:
+            n_article = 'null'
+
+        sql = 'INSERT INTO tbl_news(n_title, n_title_href, n_photo_name, n_article, n_publisher, n_reg_date) ' \
+              'VALUES(?, ?, ? ,? ,?, NOW()) '
+
+        cur.execute(sql, (n_title, n_title_href, n_photo_name, n_article, n_publisher))
 
         conn.commit()
 
